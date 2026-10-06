@@ -11,6 +11,7 @@ void ANightFallGameState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& 
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 	DOREPLIFETIME(ANightFallGameState, DayLengthSeconds);
+	DOREPLIFETIME(ANightFallGameState, StartDayPhase);
 }
 
 float ANightFallGameState::GetDayPhase() const
@@ -20,8 +21,9 @@ float ANightFallGameState::GetDayPhase() const
 		return 0.0f;
 	}
 
-	const double Elapsed = FMath::Fmod(GetServerWorldTimeSeconds(), static_cast<double>(DayLengthSeconds));
-	return static_cast<float>(Elapsed / static_cast<double>(DayLengthSeconds));
+	const double DayLength = static_cast<double>(DayLengthSeconds);
+	const double Elapsed = FMath::Fmod(GetServerWorldTimeSeconds() + static_cast<double>(StartDayPhase) * DayLength, DayLength);
+	return static_cast<float>(Elapsed / DayLength);
 }
 
 float ANightFallGameState::GetTimeOfDayHours() const

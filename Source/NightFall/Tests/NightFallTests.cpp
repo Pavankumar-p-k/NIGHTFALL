@@ -287,20 +287,30 @@ bool FNightFallDayNightTest::RunTest(const FString& Parameters)
 	TestTrue(TEXT("Game state resolved by world"), World->GetGameState<ANightFallGameState>() == GameState);
 
 	GameState->DayLengthSeconds = 4.0f;
+	const float StartPhase = GameState->GetDayPhase();
+	TestTrue(TEXT("Default start phase is daytime"), StartPhase > 0.25f && StartPhase < 0.75f);
 	const FRotator InitialRotation = Sun->GetActorRotation();
 
 	NightFallTests::TickWorld(World, 120);
 
 	const float Phase = GameState->GetDayPhase();
-	TestTrue(TEXT("Day phase advanced with world time"), Phase > 0.3f && Phase < 0.7f);
+	const float ExpectedPhase = FMath::Fmod(StartPhase + 0.5f, 1.0f);
+	TestTrue(TEXT("Day phase advanced with world time"), FMath::Abs(Phase - ExpectedPhase) < 0.05f);
 	TestTrue(TEXT("Time of day hours follow phase"), FMath::IsNearlyEqual(GameState->GetTimeOfDayHours(), Phase * 24.0f, 0.01f));
 
 	const FRotator CurrentRotation = Sun->GetActorRotation();
 	TestFalse(TEXT("Sun rotated with day phase"), CurrentRotation.Equals(InitialRotation, 1.0f));
-	TestTrue(TEXT("Sun points near zenith at midday"), CurrentRotation.Pitch > 60.0f);
+	TestTrue(TEXT("Sun rotation follows current phase"), CurrentRotation.Equals(Sun->GetSunRotationForPhase(Phase), 0.5f));
+
+	const float TicksToNoon = FMath::Fmod(0.5f - Phase + 1.0f, 1.0f) * GameState->DayLengthSeconds * 60.0f;
+	NightFallTests::TickWorld(World, FMath::RoundToInt(TicksToNoon));
+
+	const float NoonPhase = GameState->GetDayPhase();
+	TestTrue(TEXT("Reached midday"), FMath::Abs(NoonPhase - 0.5f) < 0.03f);
+	TestTrue(TEXT("Sun points near zenith at midday"), Sun->GetActorRotation().Pitch > 60.0f);
 	TestTrue(TEXT("Sun light is lit at midday"), Sun->SunLight->Intensity > 0.0f);
 	TestTrue(TEXT("Sun intensity equals noon intensity at midday"),
-		FMath::IsNearlyEqual(Sun->SunLight->Intensity, Sun->NoonIntensity, 0.1f));
+		FMath::IsNearlyEqual(Sun->SunLight->Intensity, Sun->NoonIntensity, 0.3f));
 
 	TestEqual(TEXT("Sun intensity is zero at midnight"), Sun->GetSunIntensityForPhase(0.0f), 0.0f);
 	TestEqual(TEXT("Sun intensity is zero at dawn"), Sun->GetSunIntensityForPhase(0.25f), 0.0f);

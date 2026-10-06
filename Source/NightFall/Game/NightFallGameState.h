@@ -17,6 +17,9 @@ public:
 	UPROPERTY(EditAnywhere, Replicated, BlueprintReadOnly, Category = "Time", meta = (ClampMin = "60", ClampMax = "86400"))
 	float DayLengthSeconds = 900.0f;
 
+	UPROPERTY(config, EditAnywhere, Replicated, BlueprintReadOnly, Category = "Time", meta = (ClampMin = "0", ClampMax = "1"))
+	float StartDayPhase = 0.35f;
+
 	UFUNCTION(BlueprintPure, Category = "Time")
 	float GetDayPhase() const;
 
