@@ -13,11 +13,14 @@ public class NightFall : ModuleRules
 			"Engine",
 			"InputCore",
 			"EnhancedInput",
-			"NetCore"
+			"NetCore",
+			"AIModule"
 		});
 
 		PrivateDependencyModuleNames.AddRange(new string[]
 		{
 		});
+
+		PublicIncludePaths.Add(ModuleDirectory);
 	}
 }

@@ -42,9 +42,11 @@ Live coding (`Ctrl+Alt+F11` in editor) is fine for iterating, but always run a f
 - `UE_LOG(LogTemp, Warning, TEXT("..."))` for temporary traces; introduce a project log category in `Core/` once logging becomes systematic (not yet needed).
 - Crashes write callstacks to `Saved\Logs\`.
 
-## Python (optional, editor scripting)
+## Python (editor scripting)
 
 Engine-bundled Python is at `C:\UE_5.8\Engine\Plugins\Experimental\PythonScriptPlugin`. System Python 3.11.9 is available for tooling scripts. Do not add paid/cloud tooling.
+
+Remote execution is enabled in `Config\DefaultEngine.ini` (`[/Script/PythonScriptPlugin.PythonScriptPluginSettings] bRemoteExecution=True`), which the MCP connector in `Tools\UnrealMCP\` uses to drive a live editor (takes effect on editor launch).
 
 ## Performance notes for this machine
 
@@ -53,5 +55,5 @@ Engine-bundled Python is at `C:\UE_5.8\Engine\Plugins\Experimental\PythonScriptP
 
 ## Current known gaps
 
-- No editor content yet (no default map) - creating the first test map is Phase 1.
+- Interactive solo run at 60 fps on the test map: `UNVERIFIED` (Phase 1 gate item).
 - Server target packaging status: see `BUILD.md` (installed-build limitation).

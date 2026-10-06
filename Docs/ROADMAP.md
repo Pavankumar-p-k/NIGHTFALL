@@ -2,22 +2,23 @@
 
 Ordered milestones. A milestone is done only when its verification step in `TESTING.md` passes.
 
-## Phase 0 - Setup foundation (current)
+## Phase 0 - Setup foundation (done)
 
 - Environment audit (hardware, toolchain, engine, disk).
 - Engine moved from USB `F:\UE_5.8` to internal NVMe `C:\UE_5.8`, byte-verified, re-registered, backup retained.
 - Project scaffold: `.uproject`, targets, module, config, git, LFS, docs, validation scripts.
 - **Gate:** editor target compiles, validation script passes, project opens in UnrealEditor.
 
-## Phase 1 - Vertical slice: movement and local world
+## Phase 1 - Vertical slice: movement and local world (verified, one gate item open)
 
 - Third-person character: locomotion, sprint, jump, crouch, camera (EnhancedInput).
 - Player controller + game mode + game state skeleton.
-- One test level: flat ground, lighting, a few collision props, spawn point.
+- One test level: flat ground, lighting, a few collision props, spawn point (`/Game/Maps/TestArena`, editor startup and game default map).
 - Day/night cycle (server clock) with visual sun/moon only.
-- **Gate:** solo player runs around a lit test map at 60 fps on the RTX 4050 laptop.
+- **Verified:** all 5 automation tests pass headless (`NightFall.Character.*`, `NightFall.GameMode.DefaultClasses`, `NightFall.Time.DayPhaseDrivesSun`); game smoke run loads TestArena and possesses the player pawn (exit 0); validation script 15/15.
+- **UNVERIFIED:** interactive solo run at 60 fps on the RTX 4050 (needs a manual in-editor session).
 
-## Phase 2 - Networked foundation
+## Phase 2 - Networked foundation (current)
 
 - Listen server + client connection, join/leave, late join.
 - Replicated movement and transform for player characters (2-4 clients).

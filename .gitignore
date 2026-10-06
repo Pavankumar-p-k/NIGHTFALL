@@ -23,4 +23,5 @@ Build/
 *.apk
 *.aab
 *_BuiltData.uasset
+__pycache__/
 Tools/validation-latest.txt
