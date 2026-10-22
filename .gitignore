@@ -1,0 +1,29 @@
+# Unreal Engine generated / cached folders
+Binaries/
+Build/
+DerivedDataCache/
+Intermediate/
+Saved/
+.vs/
+.vscode/
+*.VC.db
+*.opensdf
+*.sdf
+*.sln
+*.suo
+
+# Engine plugin intermediates
+Plugins/*/Intermediate/
+Plugins/*/Binaries/
+
+# ---- Large binary assets: keep OUT of plain git ----
+# If you later want them versioned, use Git LFS instead:
+#   git lfs install
+#   git lfs track "*.uasset" "*.umap" "*.png" "*.exr" "*.wav" "*.fbx"
+Content/
+
+# Keep source config + project + plan
+!Config/
+!*.uproject
+!BUILD_PLAN.md
+!*.md
