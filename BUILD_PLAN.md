@@ -4,24 +4,30 @@ UE 5.8 Blueprint project. Goal: a big open-world island game with GTA5/RDR2-styl
 distance streaming (World Partition), built for low-end devices.
 
 ## Current world state
-- **Island map:** `Content/Maps/Untitled.umap` — `Landscape_1` (4096 components,
+- **Island map:** `Content/Maps/Untitled.umap` — `Landscape_0` (4096 components,
   64x64, 63 quads each = 4032 quads/side) at user-set scale
-  **396.83 / 396.83 / 429.69 = 16.0 x 16.0 km**, origin `(-201600, -201600, 0)`.
-  Terrain spans x/y `-201600 .. 1398418`. **Do not change scale without asking.**
+  **396.83 / 396.83 / 429.69 = 16.0 x 16.0 km**, **centred on world origin**
+  `(-800009, -800009, 0)` (was `-201600`). Terrain spans x/y `-800009 .. 800009`.
+  Actor property `enable_nanite=False` (was True — caused OOM).
+  **Do not change scale without asking.**
 - **Sea level = Z 0** (verified: island edges/bed at -30..-127 m, centre peak +503 m).
+  `WaterBodyOcean_0` at Z 0 with `affects_landscape=False` (carving disabled — was
+  flattening the whole island; **never re-enable**).
+- **62 `WaterBodyRiver` actors** placed from `rivers_splines.json`, aligned to the
+  re-centred island (`DX=DY=-598409`), depths 200 cm, `affects_landscape=False`.
 - Lighting (DirectionalLight, SkyAtmosphere, SkyLight, ExponentialHeightFog,
-  VolumetricCloud) repositioned to island centre `(598409, 598409)`.
-- PCG `BP_PCG_RuntimeGroundCover_C_4` + material `MI_Landscape_Grassland_ORM` present;
-  PCG moved onto the island.
-- Water: `WaterZone_1`, `Landscape_WaterBrushManager_0`, `WaterBodyRiver_8`
-  (moved to lowland `(214405, 598409, 4619)`), and **`WaterBodyOcean_0` spawned at
-  Z 0** covering the whole island (bigger than needed, ~66 km wide).
-- `PlayerStart_0` at `(278405, 705077, 3498)` (33 m above ground, inland lowland).
+  VolumetricCloud) repositioned to island centre `(0, 0)`.
+- PCG `BP_PCG_RuntimeGroundCover_C_4` + material `MI_Landscape_Grassland_ORM` moved
+  to island centre `(0, 0, 50304)`.
+- `PlayerStart_0` at `(-53835, 316387, 5668)` — on ground (terrain 5468).
+- Water: `WaterZone_1` at (598409, 598409, 0) (oversized ~140 km, fine for open ocean).
+- **Landscape edit layers:** `LandscapeEditLayer_0` (base — holds the original island
+  heights), `LandscapeEditLayer_1` (water-brush carve layer that flattened the island).
+  Layer 1 is **hidden**; **user should delete it in Landscape -> Edit Layers (UI-only)**.
 - **Config temporarily changed** (backups: `DefaultEngine.ini.bak`, `.bak2`):
   - `EditorStartupMap` / `GameDefaultMap` = `/Game/Maps/Untitled` (was `realmap`).
-  - `r.Nanite=False` — Nanite landscape baking needs ~1 GB x 64 blocks and pushes the
-    editor past the machine's 32 GB commit limit (crashes). **Restore to True when
-    edits settle.**
+  - `r.Nanite=True` (restored) + `[SystemSettings] landscape.RenderNanite=0`
+    (landscape Nanite rebuilds need ~38 GB and crash the editor).
 - Completed & untouched: `Content/Maps/nightfallisland.umap` (old 2 km map, user-approved).
 - Intended final map name: `Content/Maps/island_16km.umap` (not created yet).
 
@@ -69,6 +75,16 @@ Finish Island #1 completely before moving to the sea, then Island #2.
   small commands and `save_current_level()` at the end of each.
 - `LevelEditorSubsystem` has no `get_loaded_level()`; use `save_current_level()`.
 - Trace enum must be `unreal.TraceTypeQuery.ECC_VISIBILITY` (old name deprecated).
+- **Water bodies placed via Python must have `affects_landscape=False`** on the water
+  body component, else the water brush flattens the terrain on the next update.
+  Property is `affects_landscape` (`b_affects_landscape` fails). Recover by hiding
+  the water-carve edit layer: `Landscape.get_edit_layers_bp()` /
+  `ly.set_editor_property("visible", False)` + `Landscape.force_layers_full_update()`.
+- Landscape edit layers and paint layers are UI-only to delete; Python can only
+  list/hide edit layers (`get_edit_layers_bp`, `get_edit_layer_by_name_bp`) and
+  import heightmaps from a render target (`landscape_import_heightmap_from_render_target`).
+- Remote-exec Python clients leak ~0.6 GB each; `Stop-Process -Name python` between
+  batches. Editor holds ~17 GB after the full island is loaded.
 
 ## History (high level)
 - 2 km map built and user-approved. Island pack imported (user) into Untitled.umap.
@@ -77,5 +93,8 @@ Finish Island #1 completely before moving to the sea, then Island #2.
 - Map rolled back to landscape-only per user; lighting re-added.
 - Scale iterated with user (132 km -> 121 km) then finally reset to the pack's intended
   **16 km** (396.83/396.83/429.69) and saved.
-- Because the old 121 km coordinates were left behind, ALL actors were re-aligned onto
-  the 16 km island and `WaterBodyOcean_0` was added at sea level Z 0.
+- Landscape re-imported/recreated by user as `Landscape_0` centred on origin.
+  Water brush carved the terrain flat (all traces hit z = -2907); recovered by
+  disabling ocean carving, hiding the water-carve edit layer (mountains restored,
+  centre +503 m), and re-aligning all 62 rivers to the re-centred island.
+- **Lesson:** always set `affects_landscape=False` on Python-spawned water bodies.
