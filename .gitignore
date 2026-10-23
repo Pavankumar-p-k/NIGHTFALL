@@ -27,3 +27,6 @@ Content/
 !*.uproject
 !BUILD_PLAN.md
 !*.md
+*.bak
+*.bak2
+*.log
