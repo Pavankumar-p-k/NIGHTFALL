@@ -15,6 +15,19 @@ distance streaming (World Partition), built for low-end devices.
   flattening the whole island; **never re-enable**).
 - **62 `WaterBodyRiver` actors** placed from `rivers_splines.json`, aligned to the
   re-centred island (`DX=DY=-598409`), depths 200 cm, `affects_landscape=False`.
+  **All 1189 spline points' Z re-set to *traced actual terrain* + 200 cm** (see
+  `Saved/island_pack/terrain_actual.csv`) — the original heightmap fit had ±3 m
+  error (worst +5.8 m) which buried water on steep slopes: 132/1189 points (11%)
+  were underground, worst rivers 13/14/0. Now 0 buried by construction.
+- **WaterZone** `WaterZone_1` centred on island **(0,0,0)** (was off-centre at the
+  old 598409 centre = 6 km error), `zone_extent` 6048000 -> **1600000**
+  (actor bounds ±48 km, verified covers the island).
+- **Water mesh quality cvars** in `[SystemSettings]`:
+  `r.Water.WaterMesh.MaxDimensionInTiles=1024` (was 256), `LODCountBias=1`,
+  `TessFactorBias=1`. The log warning quotes a **non-existent** cvar
+  (`MaxWidthInTiles`); the real one is `MaxDimensionInTiles`. Without it the
+  quadtree was downscaled 0.12x (~240 m tiles) so 14 m rivers could not render
+  at all — that was why water was invisible almost everywhere.
 - Lighting (DirectionalLight, SkyAtmosphere, SkyLight, ExponentialHeightFog,
   VolumetricCloud) repositioned to island centre `(0, 0)`.
 - PCG `BP_PCG_RuntimeGroundCover_C_4` + material `MI_Landscape_Grassland_ORM` moved
@@ -70,9 +83,12 @@ Finish Island #1 completely before moving to the sea, then Island #2.
   island peaks ~8-9 GB and regularly dies with *"Ran out of memory ... paging file is too
   small"* on a background worker. Mitigations used: `r.Nanite=False`, startup map switched
   to Untitled (skip `realmap`), heavy edits run with `-nullrhi -nosplash -unattended`.
-- **Headless remote-exec etiquette:** never run >~16 ray-traces against the landscape in
-  one command (621 traces reset the connection and took the editor down); do edits in
-  small commands and `save_current_level()` at the end of each.
+- **Headless remote-exec etiquette:** batching line traces at **50 per command works
+  reliably** (a full 1189-point terrain trace finished in 93 s); the earlier failure
+  was ~621 traces in ONE command, which reset the connection. Do edits in small
+  commands and `save_current_level()` at the end of each.
+- `run_command` results come back **single-quoted** (Python repr), so `json.loads`
+  on the raw string throws — strip quotes via `ast.literal_eval` first.
 - `LevelEditorSubsystem` has no `get_loaded_level()`; use `save_current_level()`.
 - Trace enum must be `unreal.TraceTypeQuery.ECC_VISIBILITY` (old name deprecated).
 - **Water bodies placed via Python must have `affects_landscape=False`** on the water
