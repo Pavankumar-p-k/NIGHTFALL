@@ -44,6 +44,23 @@ distance streaming (World Partition), built for low-end devices.
   (`MaxWidthInTiles`); the real one is `MaxDimensionInTiles`. Without it the
   quadtree was downscaled 0.12x (~240 m tiles) so 14 m rivers could not render
   at all — that was why water was invisible almost everywhere.
+- **Water surface raised +0.2 m:** all 1189 river spline points are now
+  `traced terrain + 220 cm` (was +200). Verified: 1189/1189 points strictly above
+  terrain, min clearance exactly 220 cm, 62/62 rivers, 0 errors, saved.
+- **Landscape material — paint layers enabled** on `MI_Landscape_Grassland_ORM`
+  (parent `M_LandscapeMaterial_HQ`, 778 expressions). Was rendering purely
+  procedural slope/elevation masks — that is why underwater showed only sand/mud
+  and the 9 weightmaps did nothing. Flipped ON and saved:
+  `Use Landscape Paint Layers`, `Use Layer02`..`Use Layer06`, `Use Auto Beach Layer`.
+  - **Original switch values:** `Saved\material_switches_before.json`.
+  - **Full asset backup (made BEFORE the edit):**
+    `Saved\backup_20261024_202755\` (202 files, 505 MB = whole `AzielArts_Material\`
+    + `Untitled.umap`); latest path also in `Saved\LAST_BACKUP.txt`.
+  - Weightmaps (ash, dry, forest, grass, gravel, jungle, mud, rock, sand) exist as
+    assets under `/Game/island_layers/`; PNGs in `Saved\island_pack\weightmaps\`.
+  - **Open:** the landscape must have those layers *allocated/painted* — enabling
+    the switches alone will not populate them. Landscape paint-layer allocation is
+    **UI-only** (`LandscapeInfo` is not exposed to Python in 5.8).
 - Lighting (DirectionalLight, SkyAtmosphere, SkyLight, ExponentialHeightFog,
   VolumetricCloud) repositioned to island centre `(0, 0)`.
 - PCG `BP_PCG_RuntimeGroundCover_C_4` + material `MI_Landscape_Grassland_ORM` moved
