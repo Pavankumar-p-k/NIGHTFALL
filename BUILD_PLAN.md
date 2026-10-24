@@ -39,11 +39,17 @@ distance streaming (World Partition), built for low-end devices.
   - For the **low-end target**, switch these to `BAKED_SIM` once happy — `Bake()`
     is not a UFUNCTION so it must be done in the editor UI per actor (Details panel).
 - **Water mesh quality cvars** in `[SystemSettings]`:
-  `r.Water.WaterMesh.MaxDimensionInTiles=1024` (was 256), `LODCountBias=1`,
+  `r.Water.WaterMesh.MaxDimensionInTiles=4096` (256 -> 1024 -> **4096**), `LODCountBias=1`,
   `TessFactorBias=1`. The log warning quotes a **non-existent** cvar
   (`MaxWidthInTiles`); the real one is `MaxDimensionInTiles`. Without it the
   quadtree was downscaled 0.12x (~240 m tiles) so 14 m rivers could not render
   at all — that was why water was invisible almost everywhere.
+  - **Square-water bug:** at `MaxDimensionInTiles=1024` a tile was ~15.6 m while
+    rivers average 16.5 m wide, so every river rendered as a chain of river-width
+    squares ("squares on points"). Raised to **4096** (tile ~4x finer) in both the
+  live console and `DefaultEngine.ini`. WaterZone `get_actor_bounds` extent is
+  **4,800,000 cm half-extent (±48 km, 96 km across)**, so tile size is
+  `2 * extent / MaxDimensionInTiles`.
 - **Water surface raised +0.2 m:** all 1189 river spline points are now
   `traced terrain + 220 cm` (was +200). Verified: 1189/1189 points strictly above
   terrain, min clearance exactly 220 cm, 62/62 rivers, 0 errors, saved.
