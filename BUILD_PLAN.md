@@ -22,6 +22,22 @@ distance streaming (World Partition), built for low-end devices.
 - **WaterZone** `WaterZone_1` centred on island **(0,0,0)** (was off-centre at the
   old 598409 centre = 6 km error), `zone_extent` 6048000 -> **1600000**
   (actor bounds ±48 km, verified covers the island).
+- **Real water flow = Shallow Water (WaterAdvanced plugin, already enabled).**
+  6 x `AShallowWaterRiver` actors (`ShallowWaterRiver_1..6`), each listing a
+  geographically-close cluster of river water bodies in `SourceRiverWaterBodies`
+  (k-means over river midpoints; a sim grid covers its sources' bounding box, so
+  distant rivers must NOT share one). All set to `RenderState=LIVE_SIM`,
+  `ResolutionMaxAxis=256`. Total 62/62 rivers covered; each spawns a Niagara
+  component running `Grid2D_SW_River`. Editor memory 14.3 GB for all 6.
+  - Component properties auto-fill on Rebuild when null (no need to assign):
+    Niagara system -> `/WaterAdvanced/Niagara/Systems/Grid2D_SW_River`, materials
+    -> `SW_Water_Material_River` / `_Spline` / `_To_Ocean_Transition`.
+  - Python notes: `RenderState` must be set with the enum
+    `unreal.ShallowWaterRenderState.LIVE_SIM` (an int is rejected); the actor's
+    **label** != `get_name()` (internal name stays `ShallowWaterRiver_N`).
+  - Harmless log line: `Rebuild() - no valid sinks, using the first source as a sink`.
+  - For the **low-end target**, switch these to `BAKED_SIM` once happy — `Bake()`
+    is not a UFUNCTION so it must be done in the editor UI per actor (Details panel).
 - **Water mesh quality cvars** in `[SystemSettings]`:
   `r.Water.WaterMesh.MaxDimensionInTiles=1024` (was 256), `LODCountBias=1`,
   `TessFactorBias=1`. The log warning quotes a **non-existent** cvar
